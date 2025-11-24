@@ -1,4 +1,5 @@
 -- ShootingGallery/main.lua
+local love = require("love")
 
 function love.load()
 	target = {}
