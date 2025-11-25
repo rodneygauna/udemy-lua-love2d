@@ -2,8 +2,11 @@
 local love = require("love")
 local wf = require("lib/windfield")
 local anim8 = require("lib.anim8.anim8")
+local sti = require("lib/Simple-Tiled-Implementation/sti")
 
 function love.load()
+    love.window.setMode(1024, 768)
+
     WORLD = wf.newWorld(0, 800, false)
     WORLD:setQueryDebugDrawing(true)
 
@@ -23,23 +26,26 @@ function love.load()
 
     require("player")
 
-    PLATFORM = WORLD:newRectangleCollider(250, 400, 300, 100, {
-        collision_class = "PLATFORM"
-    })
-    PLATFORM:setType("static")
-
-    DANGERZONE = WORLD:newRectangleCollider(0, 550, 800, 50, {
+    --[[
+		DANGERZONE = WORLD:newRectangleCollider(0, 550, 800, 50, {
         collision_class = "DANGER"
     })
     DANGERZONE:setType("static")
+		-- ]]
+
+    PLATFORMS = {}
+
+    loadMap()
 end
 
 function love.update(dt)
     WORLD:update(dt)
+    gameMap:update(dt)
     playerUpdate(dt)
 end
 
 function love.draw()
+    gameMap:drawLayer(gameMap.layers["Tile Layer 1"])
     WORLD:draw()
     playerDraw()
 end
@@ -58,5 +64,22 @@ function love.mousepressed(x, y, button)
         for i, c in ipairs(colliders) do
             c:destory()
         end
+    end
+end
+
+function spawnPlatform(x, y, width, height)
+    if width > 0 and height > 0 then
+        local platform = WORLD:newRectangleCollider(x, y, width, height, {
+            collision_class = "PLATFORM"
+        })
+        platform:setType("static")
+        table.insert(PLATFORMS, platform)
+    end
+end
+
+function loadMap()
+    gameMap = sti("maps/level1.lua")
+    for i, obj in pairs(gameMap.layers["Platforms"].objects) do
+        spawnPlatform(obj.x, obj.y, obj.width, obj.height)
     end
 end
