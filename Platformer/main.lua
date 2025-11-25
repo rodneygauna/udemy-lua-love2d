@@ -3,6 +3,7 @@ local love = require("love")
 local wf = require("lib/windfield")
 local anim8 = require("lib.anim8.anim8")
 local sti = require("lib/Simple-Tiled-Implementation/sti")
+local cameraFile = require("lib/hump/camera")
 
 function love.load()
     love.window.setMode(1024, 768)
@@ -35,6 +36,8 @@ function love.load()
 
     PLATFORMS = {}
 
+    CAM = cameraFile()
+
     loadMap()
 end
 
@@ -42,12 +45,16 @@ function love.update(dt)
     WORLD:update(dt)
     gameMap:update(dt)
     playerUpdate(dt)
+    local px, py = PLAYER:getPosition()
+    CAM:lookAt(px, love.graphics.getHeight() / 2)
 end
 
 function love.draw()
+    CAM:attach()
     gameMap:drawLayer(gameMap.layers["Tile Layer 1"])
     WORLD:draw()
     playerDraw()
+    CAM:detach()
 end
 
 function love.keypressed(key)
